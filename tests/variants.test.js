@@ -467,3 +467,14 @@ it('should be possible to use responsive modifiers that are defined with special
     `)
   })
 })
+
+it('including just the base layer should not produce variants', () => {
+  let config = {
+    content: [{ raw: html`<div class="sm:underline"></div>` }],
+    corePlugins: { preflight: false },
+  }
+
+  return run('@tailwind base', config).then((result) => {
+    return expect(result.css).toMatchFormattedCss(css``)
+  })
+})

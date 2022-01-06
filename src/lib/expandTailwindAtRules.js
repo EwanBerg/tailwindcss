@@ -243,7 +243,7 @@ export default function expandTailwindAtRules(context) {
     if (layerNodes.variants) {
       layerNodes.variants.before(cloneNodes([...screenNodes], layerNodes.variants.source))
       layerNodes.variants.remove()
-    } else {
+    } else if (layerNodes.utilities || layerNodes.components) {
       root.append(cloneNodes([...screenNodes], root.source))
     }
 
