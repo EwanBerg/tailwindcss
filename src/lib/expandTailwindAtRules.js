@@ -81,7 +81,10 @@ function buildStylesheet(rules, context) {
     defaults: new Set(),
     components: new Set(),
     utilities: new Set(),
-    variants: new Set(),
+
+    utilityVariants: new Set(),
+    componentVariants: new Set(),
+    otherVariants: new Set(),
 
     // All the CSS that is not Tailwind related can be put in this bucket. This
     // will make it easier to later use this information when we want to
@@ -96,7 +99,16 @@ function buildStylesheet(rules, context) {
 
   for (let [sort, rule] of sortedRules) {
     if (sort >= context.minimumScreen) {
-      returnValue.variants.add(rule)
+      // const layer = rule.raws.tailwind?.sort
+
+      // if (layer & context.layerOrder.components) {
+      //   returnValue.componentVariants.add(rule)
+      // } else if (layer & context.layerOrder.utilities) {
+      //   returnValue.utilityVariants.add(rule)
+      // } else {
+        returnValue.otherVariants.add(rule)
+      // }
+
       continue
     }
 
@@ -204,7 +216,9 @@ export default function expandTailwindAtRules(context) {
       base: baseNodes,
       components: componentNodes,
       utilities: utilityNodes,
-      variants: screenNodes,
+      componentVariants: componentVariantNodes,
+      utilityVariants: utilityVariantNodes,
+      otherVariants: otherVariantNodes,
     } = context.stylesheetCache
 
     // ---
@@ -240,11 +254,24 @@ export default function expandTailwindAtRules(context) {
       layerNodes.utilities.remove()
     }
 
+    // Add variants either to the explicit variant layer or implicitly
+    const variantNodes = []
+
+    if (layerNodes.components) {
+      variantNodes.push(...componentVariantNodes)
+    }
+
+    if (layerNodes.utilities) {
+      variantNodes.push(...utilityVariantNodes)
+    }
+
+    variantNodes.push(...otherVariantNodes)
+
     if (layerNodes.variants) {
-      layerNodes.variants.before(cloneNodes([...screenNodes], layerNodes.variants.source))
+      layerNodes.variants.before(cloneNodes(variantNodes, layerNodes.variants.source))
       layerNodes.variants.remove()
-    } else if (layerNodes.utilities || layerNodes.components) {
-      root.append(cloneNodes([...screenNodes], root.source))
+    } else if (variantNodes.length > 0) {
+      root.append(cloneNodes(variantNodes, root.source))
     }
 
     // ---

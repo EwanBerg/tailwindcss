@@ -478,3 +478,32 @@ it('including just the base layer should not produce variants', () => {
     return expect(result.css).toMatchFormattedCss(css``)
   })
 })
+
+it('variants for components should not be produced in a file without a components layer', () => {
+  let config = {
+    content: [{ raw: html`<div class="sm:test"></div>` }],
+    plugins: [
+      function ({ addComponents }) {
+        addComponents({
+          '.test': {
+            color: 'red',
+          },
+        })
+      }
+    ],
+  }
+
+  return run('@tailwind utilities', config).then((result) => {
+    return expect(result.css).toMatchFormattedCss(css``)
+  })
+})
+
+it('variants for utilities should not be produced in a file without a utilities layer', () => {
+  let config = {
+    content: [{ raw: html`<div class="sm:underline"></div>` }],
+  }
+
+  return run('@tailwind components', config).then((result) => {
+    return expect(result.css).toMatchFormattedCss(css``)
+  })
+})
